@@ -7,6 +7,10 @@ import { useToast } from './hooks/useToast.js';
 import { GrapeSprite } from './components/Grapes.jsx';
 import AuthScreen from './components/AuthScreen.jsx';
 import Shop from './components/Shop.jsx';
+import PublicLegal from './components/PublicLegal.jsx';
+import CookieBanner from './components/CookieBanner.jsx';
+import { useRoute } from './hooks/useRoute.js';
+import './extra.css';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -18,6 +22,7 @@ export default function App() {
   const { toast, showToast } = useToast();
   const queue = useRef(Promise.resolve()); // операции с корзиной выполняются по очереди
 
+  const route = useRoute();
   useEffect(() => installEffects(), []);
 
   /** Загружает каталог и корзину с сервера и открывает магазин. */
@@ -117,6 +122,8 @@ export default function App() {
   let screen;
   if (booting) {
     screen = <div className="boot">Подключаемся к серверу… Первый запуск может занять до минуты.</div>;
+  } else if (!user && route.startsWith('/legal/')) {
+    screen = <PublicLegal slug={route.slice(7)} />;
   } else if (!user) {
     screen = <AuthScreen soundOn={soundOn} onToggleSound={toggleSound} onLogin={enterShop} initialMsg={authMsg} />;
   } else {
@@ -132,6 +139,7 @@ export default function App() {
         onDec={decFromCart}
         onCheckout={checkout}
         onAvatar={changeAvatar}
+        route={route}
       />
     );
   }
@@ -140,6 +148,7 @@ export default function App() {
     <>
       <GrapeSprite />
       {screen}
+      <CookieBanner />
       <div className={'toast' + (toast.show ? ' show' : '')} role="status">{toast.text}</div>
     </>
   );

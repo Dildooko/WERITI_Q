@@ -1,9 +1,9 @@
-
+CREATE TABLE IF NOT EXISTS users (
   id            SERIAL PRIMARY KEY,
   username      VARCHAR(32) NOT NULL UNIQUE,
   password_hash TEXT        NOT NULL,
-  avatar        TEXT,                                   -- фото профиля (JPEG в формате data URL)
-  sound_enabled BOOLEAN     NOT NULL DEFAULT TRUE,      -- личная настройка звука
+  avatar        TEXT,
+  sound_enabled BOOLEAN     NOT NULL DEFAULT TRUE,
   role          VARCHAR(10) NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin')),
   created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS products (
   id    SERIAL PRIMARY KEY,
   name  VARCHAR(100)  NOT NULL,
   descr TEXT          NOT NULL,
-  price NUMERIC(8, 2) NOT NULL CHECK (price >= 0)       -- цена за 1 кг, в евро
+  price NUMERIC(8, 2) NOT NULL CHECK (price >= 0)
 );
 
 CREATE TABLE IF NOT EXISTS cart_items (
@@ -24,9 +24,9 @@ CREATE TABLE IF NOT EXISTS cart_items (
 
 CREATE TABLE IF NOT EXISTS orders (
   id         SERIAL PRIMARY KEY,
-  user_id    INTEGER       NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  user_id    INTEGER        NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   total      NUMERIC(10, 2) NOT NULL,
-  created_at TIMESTAMPTZ   NOT NULL DEFAULT NOW()
+  created_at TIMESTAMPTZ    NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS order_items (
@@ -37,3 +37,5 @@ CREATE TABLE IF NOT EXISTS order_items (
   price      NUMERIC(8, 2) NOT NULL,
   qty        INTEGER       NOT NULL CHECK (qty > 0)
 );
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS consent_at TIMESTAMPTZ;

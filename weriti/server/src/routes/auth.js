@@ -6,16 +6,18 @@ import { ah, normalizeUsername, validateCredentials, publicUser } from '../util.
 
 const router = Router();
 
-// POST /api/auth/register — регистрация. Пароль хешируется bcrypt'ом и в открытом виде нигде не хранится.
+
 router.post('/register', ah(async (req, res) => {
   const username = normalizeUsername(req.body?.username);
   const password = String(req.body?.password ?? '');
   const problem = validateCredentials(username, password);
   if (problem) return res.status(400).json({ error: problem });
 
+  if (req.body?.consent !== true) return res.status(400).json({ error: 'Нужно согласие на обработку персональных данных.' });
+
   const hash = await bcrypt.hash(password, 10);
   try {
-    await query('INSERT INTO users (username, password_hash) VALUES ($1, $2)', [username, hash]);
+    await query('INSERT INTO users (username, password_hash, consent_at) VALUES ($1, $2, NOW())', [username, hash]);
   } catch (err) {
     if (err.code === '23505') return res.status(409).json({ error: 'Такой логин уже занят.' });
     throw err;
@@ -23,7 +25,6 @@ router.post('/register', ah(async (req, res) => {
   res.status(201).json({ message: 'Аккаунт создан.' });
 }));
 
-// POST /api/auth/login — вход. Возвращает JWT-токен и данные пользователя.
 router.post('/login', ah(async (req, res) => {
   const username = normalizeUsername(req.body?.username);
   const password = String(req.body?.password ?? '');
@@ -34,7 +35,6 @@ router.post('/login', ah(async (req, res) => {
   res.json({ token: signToken(user), user: publicUser(user) });
 }));
 
-// GET /api/auth/me — кто я (проверка токена при открытии сайта).
 router.get('/me', requireAuth, ah(async (req, res) => {
   const { rows } = await query('SELECT * FROM users WHERE id = $1', [req.userId]);
   if (!rows[0]) return res.status(401).json({ error: 'Аккаунт не найден. Войдите снова.' });

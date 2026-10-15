@@ -3,6 +3,7 @@ import { api, setToken } from '../api.js';
 import { Sound } from '../sound.js';
 import { Grapes } from './Grapes.jsx';
 import SoundToggle from './SoundToggle.jsx';
+import { SITE } from '../siteConfig.js';
 
 /** Экран входа и регистрации. */
 export default function AuthScreen({ soundOn, onToggleSound, onLogin, initialMsg }) {
@@ -10,6 +11,7 @@ export default function AuthScreen({ soundOn, onToggleSound, onLogin, initialMsg
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
+  const [agree, setAgree] = useState(false); // по умолчанию не отмечено
   const [msg, setMsg] = useState(initialMsg || null);
   const reg = mode === 'register';
 
@@ -24,7 +26,7 @@ export default function AuthScreen({ soundOn, onToggleSound, onLogin, initialMsg
     setBusy(true);
     try {
       if (reg) {
-        await api.register(username, password);
+        await api.register(username, password, agree);
         setMode('login');
         setPassword('');
         setMsg({ text: 'Аккаунт создан. Теперь войдите.', kind: 'ok' });
@@ -76,6 +78,16 @@ export default function AuthScreen({ soundOn, onToggleSound, onLogin, initialMsg
               required
               minLength={6}
             />
+            {reg && (
+              <label className="chk">
+                <input type="checkbox" checked={agree} onChange={e => setAgree(e.target.checked)} onInvalid={() => Sound.error()} required />
+                <span>
+                  Я даю <a href="#/legal/consent" target="_blank" rel="noopener">согласие на обработку персональных данных</a> для
+                  регистрации и оформления заказов и ознакомлен(а) с <a href="#/legal/privacy" target="_blank" rel="noopener">Политикой конфиденциальности</a>.
+                  Согласие можно отозвать, написав на {SITE.email}.
+                </span>
+              </label>
+            )}
             <button className="btn full" type="submit" data-nosound="true" disabled={busy}>
               {busy ? (reg ? 'Создаём…' : 'Входим…') : reg ? 'Создать аккаунт' : 'Войти'}
             </button>
@@ -86,6 +98,11 @@ export default function AuthScreen({ soundOn, onToggleSound, onLogin, initialMsg
             <button type="button" onClick={switchMode}>{reg ? 'Войти' : 'Зарегистрироваться'}</button>
           </p>
           <p className="note">Пароль хранится на сервере только в виде хеша (bcrypt).</p>
+          <p className="legal-links">
+            <a href="#/legal/requisites">Реквизиты</a>
+            <a href="#/legal/privacy">Политика конфиденциальности</a>
+            <a href="#/legal/offer">Оферта</a>
+          </p>
         </div>
       </div>
     </section>

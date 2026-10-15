@@ -1,12 +1,8 @@
 import { Sound } from './sound.js';
 
-/**
- * Общие эффекты кнопок: разрешение звука при первом касании, звук нажатия
- * и волна от места касания. Возвращает функцию, которая всё это отключает.
- */
 export function installEffects() {
   const unlock = () => Sound.unlock();
-  const noop = () => {}; // без этого :active не работает в Safari на iPhone
+  const noop = () => {};
 
   const onClick = e => {
     const b = e.target.closest && e.target.closest('button');

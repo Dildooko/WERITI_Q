@@ -41,7 +41,7 @@ async function request(method, path, body) {
 }
 
 export const api = {
-  register: (username, password) => request('POST', '/auth/register', { username, password }),
+  register: (username, password, consent) => request('POST', '/auth/register', { username, password, consent }),
   login: (username, password) => request('POST', '/auth/login', { username, password }),
   me: () => request('GET', '/auth/me'),
   updateProfile: patch => request('PATCH', '/profile', patch),
@@ -54,4 +54,5 @@ export const api = {
   removeFromCart: productId => request('DELETE', `/cart/${productId}`),
 
   checkout: () => request('POST', '/orders'),
+  orders: () => request('GET', '/orders'),
 };
